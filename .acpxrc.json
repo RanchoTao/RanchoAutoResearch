@@ -1,0 +1,11 @@
+{
+  "agents": {
+    "codex": {
+      "argv": [
+        "C:/Users/RanchoTao/Desktop/RanchoAutoResearch/AutoResearchClaw/.venv/Scripts/codex-acp.cmd"
+      ]
+    }
+  },
+  "defaultPermissions": "approve-reads",
+  "nonInteractivePermissions": "deny"
+}
