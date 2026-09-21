@@ -176,6 +176,7 @@ Depending on the arc, include a scientifically appropriate subset of:
 - System One Adapter + one cheap/fast LLM;
 - openjev-sglang;
 - open-jev-deberta-v3-large;
+- Mapika/decider-2b;
 - GLiNER2.5 / appropriate trained classifier;
 - task-specific reranker;
 - HybridLLM / FrugalGPT / RouteLLM / GraphRouter;
