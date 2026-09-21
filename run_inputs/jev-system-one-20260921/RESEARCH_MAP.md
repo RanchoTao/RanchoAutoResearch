@@ -553,3 +553,71 @@ Use this hierarchy during AutoResearch:
 
 A GO decision cannot rest primarily on Tier D evidence.
 
+
+
+---
+
+## 12. Late-discovery addendum: benchmark and open-baseline bar moved up
+
+Two public resources found in the final collision pass materially raise the novelty bar and are **mandatory** in the first AutoResearch audit.
+
+### Typed Decision Bench v0.3.0 (Blobfish AI)
+
+Public report:
+- https://blobfish.ai/leaderboard/reports/typed-decision-bench-v03-20260919
+- https://blobfish.ai/benchmarks/typed-decision-bench/tasks
+
+Current v0.3.0 scope:
+- 5,387 frozen items;
+- 25 typed-decision tasks;
+- five use-case-family suites;
+- public-dataset ground truth;
+- the same System One wire format across systems;
+- proper scoring of returned probability distributions plus top-pick accuracy;
+- no LLM judge;
+- per-system raw/request/answer grading artifacts are exposed for an audited sample, with leaderboard scoring over the full roster.
+
+Systems shown include Jev and multiple open alternatives such as decider-2b, OpenJev, NanoJev, System One Scorer, and JevFish.
+
+Research implication:
+- a generic "build a better Jev benchmark" paper now has **high collision risk**;
+- use this benchmark as a frozen common test bed, but primary paper claims should be about invariance, calibration transfer, compositional risk, causal decomposition, or another mechanism not captured by one aggregate DecisionScore;
+- contamination must be treated explicitly because closed-model training data are unknown.
+
+### Mapika/decider
+
+Repository:
+- https://github.com/Mapika/decider
+- weights: https://huggingface.co/Mapika/decider-2b
+
+Key properties:
+- open Apache-2.0 reproduction of the typed System-One interface;
+- Qwen3.5-2B-Base backbone;
+- one-pass typed decisions without free-form decoding;
+- Choice / Score / Noul-compatible behavior;
+- explicit calibration evaluation (NLL/Brier/ECE/AURC);
+- roughly 95 public datasets in its training/evaluation registry;
+- full training/evaluation code and released weights;
+- a TypeSafe-compatible wire endpoint;
+- explicit question-independence and isolated-score-level implementations.
+
+Most important collision:
+the project reports that **packed multi-question prompts can show order interference**: reversing question order changes up to 12% of answers on seven multi-question tasks. Its independent-scoring design eliminates that dependence by construction while keeping accuracy close on those tasks.
+
+Research implication:
+- H02 cannot be pitched merely as "multi-question packing might interfere"; an open implementation has already observed this phenomenon and proposed a construction that removes it;
+- H02 must instead ask whether **Jev's claimed independence is empirically stronger than packed autoregressive/open baselines**, quantify its failure envelope, or compare architectural/interface strategies under matched state reuse and systems cost;
+- H18 becomes stronger: decider is an additional counterfactual separating "typed one-pass interface" from proprietary Jev training;
+- H06/H19 also gain a serious open baseline because decider publishes high-cardinality and long-state results.
+
+### Revised minimum open-baseline set
+
+For any core claim about the model class, the default shortlist is now:
+
+1. Jev (pin exact returned version);
+2. Mapika/decider-2b;
+3. openjev-sglang;
+4. open-jev-deberta-v3-large or a task-specialized encoder;
+5. System One Adapter + a generative LLM when the question concerns generation-vs-decision effects.
+
+A paper may use fewer only when a baseline is scientifically irrelevant to that specific hypothesis.
