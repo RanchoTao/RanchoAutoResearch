@@ -62,3 +62,38 @@ A candidate can receive GO only if:
 - **UNKNOWN**: not public / not verified.
 
 AutoResearch must use these labels in every synthesis table.
+
+
+## Final collision-pass updates
+
+Two discoveries materially change the triage:
+
+### Typed Decision Bench v0.3.0
+- 5,387 frozen items / 25 tasks / five suites;
+- public-dataset ground truth;
+- proper probability scoring and top-pick accuracy;
+- same typed wire interface across six systems.
+
+**Effect:** any generic "new Jev benchmark / leaderboard / aggregate DecisionScore" arc is now **KILL** unless it measures a scientifically distinct property that the benchmark does not address.
+
+### Mapika/decider
+- open Qwen3.5-2B typed-decision model with released weights/training/eval code;
+- publishes NLL/Brier/ECE/AURC, high-cardinality tests, long-state tests, and explicit independence probes;
+- reports up to 12% answer changes from reversing packed-question order on seven multi-question tasks; independent per-question scoring removes the dependence by construction.
+
+**Effect on hypotheses:**
+- **H02:** PIVOT from "discover batching interference" to "test Jev's empirical independence claim and characterize the accuracy/latency cost of achieving independence across implementations."
+- **H06:** stronger baseline; keep GO-audit only if cardinality law exceeds existing decider high-cardinality tables.
+- **H09/H10/H11:** stronger calibration/selective baseline; Jev must beat or differ from a trained open calibrated decision model, not only chat LLMs.
+- **H18:** strengthened; now compare at least two open counterfactual mechanisms (prefill-logit and trained one-pass typed model).
+- **H19:** raised novelty bar; crossover study must explain/predict regimes, not merely compare accuracy.
+
+### Revised paper-core shortlist after public collision pass
+
+- **GO-audit:** H03, H09, H11, H12, H18.
+- **PIVOT-audit:** H02, H05, H06, H07, H10, H15, H19.
+- **KILL as standalone core:** H01, H04, H08, H13, H14, H16, H17, H20.
+- **H17 remains useful as a methodology/confound section**, not the main paper claim.
+- H13 can re-enter only as a downstream application of H09/H11, not as "Jev is a router."
+
+This is a **pre-experiment** disposition, not a final scientific verdict. AutoResearch must still verify the literature and repositories independently.
