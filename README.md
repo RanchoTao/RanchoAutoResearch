@@ -1,3 +1,23 @@
+# Published language-model study
+
+**Persistent Depth Ordering amid Shifting Block-Bypass Responses in Language Model Pretraining**
+Shengye Tao, Yinzhu Cheng, Haihua Xie · arXiv preprint · submitted 1 October 2026.
+
+[Paper](https://arxiv.org/abs/2610.01165) · [v1 PDF](https://arxiv.org/pdf/2610.01165v1) · [Publication and cached reproduction](releases/arxiv-2610.01165/README.md)
+
+```bash
+python reproduce.py --verify-only
+python reproduce.py --output ../reproduced-arxiv-2610.01165
+```
+
+Install the display dependencies first; see the linked guide. The entry point verifies hashes and renders saved table/figure inputs in a disposable copy. It does not rerun inference or statistical resampling. The exact public v1 source archive is included. `paper/`, `archive/candidate_a/` and `ICLR2027_HANDOFF/` retain historical titles and states as frozen records; they are not the final arXiv v1 source. A preprint listing does not establish conference acceptance. Full clean-room inference replay and a unified GPU lock remain unverified.
+
+---
+
+## Upstream AutoResearchClaw documentation
+
+The documentation below describes the underlying upstream framework and its separate paper (arXiv:2605.20025).
+
 <p align="center">
   <img src="image/logo.png" width="700" alt="AutoResearchClaw Logo">
 </p>
