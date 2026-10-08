@@ -12,6 +12,22 @@ spec.loader.exec_module(display)
 
 
 class CachedInputBoundaryTests(unittest.TestCase):
+    def test_restores_original_npz_bytes_from_expanded_public_source(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            work = Path(temporary)
+            arrays = display.extract_snapshot(
+                display.RELEASE / "source-v1.tar.gz", work)
+            before = {name: display.digest(work / name) for name in arrays}
+            expected = "e4df41b3fc593683fefd67059cabaa199f2ef28ca9426507cca2f5c40fb8ef8f"
+            self.assertEqual(display.restore_counts(work, arrays), expected)
+            self.assertEqual(len(arrays), 35)
+            self.assertEqual(before, {name: display.digest(work / name) for name in arrays})
+            target = work / "anc/source/data/broad/window_counts.npz"
+            self.assertEqual(display.digest(target), expected)
+            target.write_bytes(b"tampered")
+            with self.assertRaises(ValueError):
+                display.restore_counts(work, arrays)
+
     def test_missing_and_modified_inputs_fail(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -26,6 +42,29 @@ class CachedInputBoundaryTests(unittest.TestCase):
             path.unlink()
             with self.assertRaises(ValueError):
                 display.verify_manifest(root, manifest)
+
+    def test_generated_table_export_is_byte_identical_and_source_is_unchanged(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "generated"
+            (source / "tables").mkdir(parents=True)
+            with tarfile.open(display.RELEASE / "source-v1.tar.gz", "r:gz") as archive:
+                tables = {m.name: archive.extractfile(m).read() for m in archive.getmembers()
+                          if m.name.startswith("tables/") and m.name.endswith(".tex")}
+            self.assertEqual(len(tables), 11)
+            windows = {name: content.replace(b"\n", b"\r\n") for name, content in tables.items()}
+            for name, content in windows.items():
+                (source / name).write_bytes(content)
+            asset = source / "unrelated.bin"
+            asset.write_bytes(b"binary\r\nbytes")
+            target = root / "exported"
+            self.assertEqual(len(display.export_generated(source, target)), 11)
+            for name, content in tables.items():
+                self.assertEqual((target / name).read_bytes(), content)
+                self.assertEqual((source / name).read_bytes(), windows[name])
+            self.assertEqual((target / asset.name).read_bytes(), asset.read_bytes())
+            second = root / "exported-again"
+            self.assertEqual(display.export_generated(target, second), [])
 
     def test_manifest_traversal_fails(self):
         with tempfile.TemporaryDirectory() as temporary:

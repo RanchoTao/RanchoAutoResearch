@@ -16,6 +16,7 @@ import sys
 import tarfile
 import tempfile
 import time
+import zipfile
 
 ROOT = Path(__file__).resolve().parent
 RELEASE = ROOT / "releases/arxiv-2610.01165"
@@ -84,10 +85,17 @@ def restore_counts(work: Path, arrays: list[str]) -> str:
     """Reverse arXiv's ZIP expansion; require the original exported NPZ hash."""
     target = work / "anc/source/data/broad/window_counts.npz"
     if not target.exists():
-        import numpy as np
         buffer = io.BytesIO()
-        values = {Path(name).stem: np.load(work / name, allow_pickle=False) for name in arrays}
-        np.savez_compressed(buffer, **values)
+        # arXiv preserved the original NPY member bytes. Repackage those bytes
+        # with NumPy's fixed-time ZIP64 layout and the original Unix marker;
+        # ZipInfo otherwise selects a host-dependent central-directory byte.
+        with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            for name in arrays:
+                member = zipfile.ZipInfo(Path(name).name)
+                member.create_system = 3
+                member.compress_type = zipfile.ZIP_DEFLATED
+                with archive.open(member, "w", force_zip64=True) as output, (work / name).open("rb") as source:
+                    shutil.copyfileobj(source, output)
         target.write_bytes(buffer.getvalue())
     expected = next(line.split("  ", 1)[0] for line in
                     (work / "anc/SHA256SUMS.txt").read_text().splitlines()
@@ -99,6 +107,19 @@ def restore_counts(work: Path, arrays: list[str]) -> str:
 
 def inventory(root: Path) -> dict[str, str]:
     return {p.relative_to(root).as_posix(): digest(p) for p in sorted(root.rglob("*")) if p.is_file()}
+
+
+def export_generated(source: Path, target: Path) -> list[str]:
+    """Export generated TEX in its canonical LF representation on every host."""
+    shutil.copytree(source, target)
+    converted = []
+    for path in sorted((target / "tables").glob("*.tex")):
+        raw = path.read_bytes()
+        portable = raw.replace(b"\r\n", b"\n")
+        if portable != raw:
+            path.write_bytes(portable)
+            converted.append(path.name)
+    return converted
 
 
 def main() -> int:
@@ -161,7 +182,8 @@ def main() -> int:
             for name, expected in frozen.items():
                 if not name.startswith("anc/validation/") and digest(work / name) != expected:
                     raise ValueError(f"A cached/source/canonical input was modified in the disposable copy: {name}")
-            for directory in ("anc/generated", "anc/validation", "anc/source/dense/qa"):
+            receipt["generated_table_lf_exports"] = export_generated(work / "anc/generated", output / "generated")
+            for directory in ("anc/validation", "anc/source/dense/qa"):
                 shutil.copytree(work / directory, output / Path(directory).name)
             dense = output / "dense"
             dense.mkdir()
